@@ -22,7 +22,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 'method' => 'post',
             ],
         ]) ?>
-        <?= Html::a('Встановити категорію', ['set-category', 'id' => $model->id], ['class' => 'btn btn-default']) ?>
         <?= Html::a('Додати зображення', ['set-image', 'id' => $model->id], ['class' => 'btn btn-default']) ?>
 
     </p>
