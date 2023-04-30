@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Brands;
 use app\models\Categories;
 use app\models\Goods;
 use app\models\GoodsSearch;
@@ -40,7 +41,7 @@ class GoodsController extends Controller
                     'roles' => ['@'], // Лише автентифіковані користувачі можуть отримати доступ до цих дій
                 ],
                 [
-                    'actions' => ['index', 'index2', 'create', 'update', 'delete', 'view', 'set-category', 'set-image'],
+                    'actions' => ['statistics', 'index', 'index2', 'create', 'update', 'delete', 'view', 'set-category', 'set-image'],
                     'allow' => true,
                     'matchCallback' => function ($rule, $action) {
                         return !Yii::$app->user->isGuest && Yii::$app->user->identity->isAdmin;
@@ -201,17 +202,40 @@ class GoodsController extends Controller
         return $this->render('image', ['model' => $model]);
     }
 
+
     public function actionSingle($id)
     {
         $goods = Goods::findOne($id);
-//        $popular = Article::getPopular();
-//        $recent = Article::getRecent();
-//        $categories = Category::getAll();
         return $this->render('single', [
             'goods' => $goods,
-//            'popular' => $popular,
-//            'recent' => $recent,
-//            'categories' => $categories
+        ]);
+    }
+
+    /**
+     * Передает запрос на отображение самого дорогого товара во всех брендах и категориях
+     */
+    public function actionStatistics()
+    {
+
+        $categories = Goods::find()
+            ->select(['categories.name AS category_name', 'goods.name', 'goods.price'])
+            ->join('JOIN', 'categories', 'categories.id = goods.category_id')
+            ->groupBy('categories.id')
+            ->orderBy(['categories.name' => SORT_ASC, 'goods.price' => SORT_DESC])
+            ->asArray()
+            ->all();
+
+        $brand = Goods::find()
+            ->select(['brands.name AS brand_name', 'goods.name', 'goods.price'])
+            ->join('JOIN', 'brands', 'brands.id = goods.brand_id')
+            ->groupBy('brands.id')
+            ->orderBy(['brands.name' => SORT_ASC, 'goods.price' => SORT_DESC])
+            ->asArray()
+            ->all();
+
+        return $this->render('statistics', [
+            'categories' => $categories,
+            'brand' => $brand
         ]);
     }
 }
